@@ -1,0 +1,9 @@
+function on_message(self, message_id, message, sender)
+	if message_id == hash("show_win") then
+		local win_node = gui.get_node("win_text")
+		gui.set_enabled(win_node, true)
+
+		-- 🚀 直接向發送者（也就是大腦 logic 腳本）回覆：遊戲結束，鎖死雙腿！
+		msg.post(sender, "game_set")
+	end
+end

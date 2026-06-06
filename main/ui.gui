@@ -1,0 +1,28 @@
+script: "/main/ui.gui_script"
+fonts {
+  name: "default"
+  font: "/builtins/fonts/default.font"
+}
+nodes {
+  position {
+    x: 382.0
+    y: 320.0
+  }
+  scale {
+    x: 5.0
+    y: 5.0
+  }
+  size {
+    x: 200.0
+    y: 100.0
+  }
+  type: TYPE_TEXT
+  text: "YOU WIN\n"
+  ""
+  font: "default"
+  id: "win_text"
+  inherit_alpha: true
+  enabled: false
+}
+material: "/builtins/materials/gui.material"
+adjust_reference: ADJUST_REFERENCE_PARENT

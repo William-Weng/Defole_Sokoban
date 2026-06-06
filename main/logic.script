@@ -1,0 +1,104 @@
+local TILE_SIZE = 128
+
+local TILE_WALL   = 1
+local TILE_GROUND = 2
+local TILE_BOX    = 3
+local TILE_TARGET = 4
+local TILE_PLAYER = 5
+
+-- 🏆 巡邏金幣的精準網格座標
+local TARGET_POSITIONS = {
+	{ x = 7, y = 5 }
+}
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.player_x = 4
+	self.player_y = 7
+	self.is_game_over = false
+
+	sound.play("#bgm")
+end
+
+-- 🏆 【全自動巡邏大腦】每次主角走完，發送訊息到這裡執行
+local function check_win_condition()
+	local url = msg.url("#level")
+	local all_targets_covered = true
+
+	for _, pos in ipairs(TARGET_POSITIONS) do
+		local layer2_tile = tilemap.get_tile(url, "layer2", pos.x, pos.y)
+		if layer2_tile ~= TILE_BOX then
+			all_targets_covered = false
+			break
+		end
+	end
+
+	if all_targets_covered then
+		-- 🚀 精準投遞勝利命令到 UI 視窗組件
+		msg.post("#ui", "show_win")
+	end
+end
+
+local function try_move(self, dx, dy)
+	if self.is_game_over then return end
+
+	local target_x = self.player_x + dx
+	local target_y = self.player_y + dy
+	local next_x = target_x + dx
+	local next_y = target_y + dy
+
+	-- 邊界攔截 (3-8, 4-8)
+	if target_x <= 3 or target_x >= 8 or target_y <= 4 or target_y >= 8 then
+		return
+	end
+
+	local layer1_tile = tilemap.get_tile("#level", "layer1", target_x, target_y)
+	local layer2_tile = tilemap.get_tile("#level", "layer2", target_x, target_y)
+
+	if layer1_tile == TILE_WALL or layer2_tile == TILE_WALL then
+		return
+	end
+
+	-- 推箱子邏輯
+	if layer2_tile == TILE_BOX then
+		if next_x <= 3 or next_x >= 8 or next_y <= 4 or next_y >= 8 then
+			return
+		end
+
+		local next_layer2 = tilemap.get_tile("#level", "layer2", next_x, next_y)
+		if next_layer2 == 0 then
+			tilemap.set_tile("#level", "layer2", target_x, target_y, 0)
+			tilemap.set_tile("#level", "layer2", next_x, next_y, TILE_BOX)
+		else
+			return
+		end
+	end
+
+	-- 移動主角
+	tilemap.set_tile("#level", "layer2", self.player_x, self.player_y, 0)
+	self.player_x = target_x
+	self.player_y = target_y
+	tilemap.set_tile("#level", "layer2", self.player_x, self.player_y, TILE_PLAYER)
+
+	-- 👣 主角移動完畢，立刻通知自己內部的巡邏大腦檢查勝負！
+	msg.post("#", "check_rules")
+end
+
+function on_input(self, action_id, action)
+	if action.pressed then
+		if action_id == hash("up") then try_move(self, 0, 1)
+		elseif action_id == hash("down") then try_move(self, 0, -1)
+		elseif action_id == hash("left") then try_move(self, -1, 0)
+		elseif action_id == hash("right") then try_move(self, 1, 0)
+		end
+	end
+end
+
+-- ⚡ 【全自動訊息調度中心】
+function on_message(self, message_id, message, sender)
+	if message_id == hash("check_rules") then
+		check_win_condition()
+	elseif message_id == hash("game_set") then
+		self.is_game_over = true
+	end
+end

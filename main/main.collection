@@ -1,0 +1,29 @@
+name: "main"
+scale_along_z: 0
+embedded_instances {
+  id: "map"
+  data: "components {\n"
+  "  id: \"level\"\n"
+  "  component: \"/main/level.tilemap\"\n"
+  "}\n"
+  "components {\n"
+  "  id: \"logic\"\n"
+  "  component: \"/main/logic.script\"\n"
+  "}\n"
+  "components {\n"
+  "  id: \"ui\"\n"
+  "  component: \"/main/ui.gui\"\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"bgm\"\n"
+  "  type: \"sound\"\n"
+  "  data: \"sound: \\\"/main/bgm.ogg\\\"\\n"
+  "looping: 1\\n"
+  "\"\n"
+  "}\n"
+  ""
+  position {
+    x: -256.0
+    y: -384.0
+  }
+}
